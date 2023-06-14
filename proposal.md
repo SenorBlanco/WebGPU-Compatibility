@@ -220,7 +220,7 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
     - untried
     - complexity of implementation
 
-### 13. Disallow `texture\*()` of a `texture_depth_2d_array` with an offset
+### 13. Disallow `texture*()` of a `texture_depth_2d_array` with an offset
 
 **Justification**: OpenGL ES does not support `textureOffset()` on a sampler2DArrayShadow.
 
@@ -246,4 +246,12 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
 
 ### 15. Emit `dFdx()` and `dFdy()` for all derivative functions (include Coarse and Fine variants).
 
-**Justification**: GLSL does not support `dFd\*Coarse()` or `dFd\*Fine()` functions. However, these can be interpreted as a hint in WGSL.
+**Justification**: GLSL does not support `dFd*Coarse()` or `dFd*Fine()` functions. However, these variants can be interpreted as a hint in WGSL, and emitted as `dFd*()`.
+
+### 16. Use GL_ext_texture_format_BGRA8888 to support BGRA `copyBufferToTexture()` and RGBA textures and swizzle workarounds where unavailable.
+
+### 17. Work around lack of BGRA support in copyTextureToBuffer() via compute or sampling.
+
+### 18. Disallow bgra8unorm-srgb textures.
+
+### 19. Use emulation to support BaseVertex / BaseInstance in direct draws. Disallow via validation in indirect draws.
