@@ -172,6 +172,78 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
   - cons:
     - poor reach
 
-### 9. `GPUTextureViewDimension` `CubeArray` is unsupported
+### 9. Inject hidden uniforms for textureNumLevels() and textureNumSamples() where required.
+
+**Justification**: OpenGL ES 3.1 does not support textureQueryLevels() (only added to desktop GL in OpenGL 4.3).
+
+**Alternatives Considered**:
+
+- disallow textureNumLevels() and textureNumSamples() in WGSL.
+  - pros:
+    - ease of implementation
+  - cons:
+    - poor compatibility
+
+### 10. Emulate 1D textures with 2D textures.
+
+**Justification**: OpenGL ES does not support 1D textures.
+
+**Alternatives Considered**:
+
+- disallow 1D textures in WGSL and API
+  - pros:
+    - ease of implementation
+  - cons:
+    - poor compatibility
+
+### 11. `GPUTextureViewDimension.CubeArray` is unsupported
 
 **Justification**: OpenGL ES does not support Cube Array textures.
+
+**Alternatives Considered**:
+- none
+
+### 12. Disallow textureLoad() of depth textures in WGSL via validation.
+
+**Justification**: OpenGL ES does not support texelFetch() of a depth texture.
+
+**Alternatives considered**:
+- bind to an RGBA8 binding point and use shader ALU
+  - pros:
+    - compatibility, performance
+  - cons:
+    - untried (does this work?)
+- use texture() with quantized texture coordinates; massage the results
+  - pros:
+    - compatibility, performance
+  - cons:
+    - untried
+    - complexity of implementation
+
+### 13. Disallow texture\*() of a texture_depth_2d_array with an offset
+
+**Justification**: OpenGL ES does not support textureOffset() on a sampler2DArrayShadow.
+
+**Alternatives considered**:
+
+- emulate with a texture() call and use ALU for offset
+  - pros:
+    - compatibility, performance
+  - cons:
+    - untried
+
+### 14. Manually pad out GLSL structs and interface blocks to support custom @offset, @align or @size decorations.
+
+**Justification**: OpenGL ES does not support offset= interface block decorations on anything but atomic_uint.
+
+**Alternatives considered**:
+
+- disallow @offset, @align and @size on WGSL structs via validation
+  - pros:
+    - ease of implementation
+  - cons:
+    - poor compatibility
+
+### 15. Emit dFdx() and dFdy() for all derivative functions (include Coarse and Fine variants).
+
+**Justification**: GLSL does not support dFd*Coarse() or dFd*Fine() functions. These can be interpreted as a hint, and ignored in GLSL.
