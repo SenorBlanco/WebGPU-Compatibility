@@ -50,10 +50,10 @@ When specifying a texture, a viewDimension property determines the views which c
 **Alternatives considered:**
 - make a view dimension guess at texture creation time, and perform a texture-to-texture copy at bind time if the guess was incorrect.
   - pros:
-   - wider support of WebGPU content without modification
+    - wider support of WebGPU content without modification
   - cons:
     - unexpected performance cliff for developers
-    - potentially increased memory usage (two+ copies of texture data)
+    - potentially increased VRAM usage (two+ copies of texture data)
 - disallow 6-layer 2D arrays (always cube maps)
   - cons:
     - poor compatibility, limits applications
@@ -65,7 +65,7 @@ When specifying a texture, a viewDimension property determines the views which c
     - wider support of WebGPU content without modification
   - cons:
     - if developer doesn't provide the hint, it's still a performance cliff
-    - potentially increased memory usage (two+ copies of texture data)
+    - potentially increased VRAM usage (two+ copies of texture data)
 
 ### 2. Emulate copyTextureToBuffer() of depth/stencil textures with a compute shader
 
@@ -78,10 +78,11 @@ When specifying a texture, a viewDimension property determines the views which c
   - cons:
     - large performance cliff
 - disallow via validation
+  - pros:
+    - ease of implementation
   - cons:
     - poor compatibility
-
-- require [NV_read_stencil](https://registry.khronos.org/OpenGL/extensions/NV/NV_read_depth_stencil.txt)
+- require [NV_read_depth_stencil](https://registry.khronos.org/OpenGL/extensions/NV/NV_read_depth_stencil.txt)
   - pros:
     - good performance
   - cons:
@@ -93,6 +94,10 @@ When specifying a texture, a viewDimension property determines the views which c
 
 **Alternatives considered**:
 - disallow via validation
+  - pros:
+    - ease of implementation
+  - cons:
+    - poor compatibility; limits applications
 
 ### 4. Disallow `CommandEncoder.copyTextureToBuffer()` for compressed texture formats
 
@@ -102,23 +107,41 @@ When specifying a texture, a viewDimension property determines the views which c
 glReadPixels() on works on a framebuffer-complete FBO.
 
 **Alternatives considered**: 
-- implement a shadow copy buffer, and upload both the compressed and uncompressed data
+- implement a shadow copy buffer, and upload the compressed data to both a buffer and a texture
+  - pros:
+    - good compatibility
+  - cons:
+    - performance overhead, even when readbacks are not required
+    - VRAM overhead
 
-### 5. Emulate separate sampler and texture objects with a cache of combined texture/samplers.
+### 5. Views of the same texture used in a single draw may not differ in mip level or array layer 
+
+A draw call may not reference the same texture with two views differing in mip level or array layer. Only a single mip level and array layer per texture is supported. This is enforced via validation at encode time.
+
+**Justification**: OpenGL ES does not support texture views.
+
+**Alternatives considered**:
+
+- when two bindings exist with different mip levels or array layers, do a texture-to-texture copy
+  - pros:
+    - good compatibility
+  - cons:
+    - a performance cliff for developers
+    - higher VRAM usage
+
+### 6. Emulate separate sampler and texture objects with a cache of combined texture/samplers.
 
 **Justifcation**: OpenGL ES does not support separate sampler and texture objects.
 
 **Alternatives considered**:
 
 - allow only a single sampler to be used with a given texture
+  - pros:
+    - ease of implementation
+  - cons:
+    - poor compatibility
 
-### 6. Views of the same texture used in a single draw may not differ in mip level or array layer 
-
-A draw call may not reference the same texture with two views differing in mip level. Only a single mip level per texture is supported. This is enforced via validation at encode time.
-
-**Justification**: OpenGL ES does not support texture views.
-
-### 7. Solor state alphaBlend, colorBlend and writeMask may not differ in a single draw.
+### 7. Color state alphaBlend, colorBlend and writeMask may not differ in a single draw.
 
 Color state descriptors used in a single draw must have the same alphaBlend, colorBlend and writeMask, or else an encode-time validation error will occur.
 
@@ -126,7 +149,8 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
 
 **Alternatives considered**
 - require [GL_EXT_draw_buffers_indexed](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_draw_buffers_indexed.txt) 
- - con: has [limited support (~42%)](https://opengles.gpuinfo.org/listreports.php?extension=GL_EXT_draw_buffers_indexed)
+  - pro: ease of implementation
+  - con: poor reach: GL_EXT_draw_buffers_indexed has [limited support (~42%)](https://opengles.gpuinfo.org/listreports.php?extension=GL_EXT_draw_buffers_indexed)
 - expose as a WebGPU extension when the GLES extension is present (this could be a followup change)
 
 ### 9. `GPUTextureViewDimension` `CubeArray` is unsupported
