@@ -82,7 +82,7 @@ When specifying a texture, a viewDimension property determines the views which c
     - ease of implementation
   - cons:
     - poor compatibility
-- require [NV_read_depth_stencil](https://registry.khronos.org/OpenGL/extensions/NV/NV_read_depth_stencil.txt)
+- require [GL_NV_read_depth_stencil](https://registry.khronos.org/OpenGL/extensions/NV/NV_read_depth_stencil.txt)
   - pros:
     - good performance
   - cons:
@@ -152,6 +152,25 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
   - pro: ease of implementation
   - con: poor reach: GL_EXT_draw_buffers_indexed has [limited support (~42%)](https://opengles.gpuinfo.org/listreports.php?extension=GL_EXT_draw_buffers_indexed)
 - expose as a WebGPU extension when the GLES extension is present (this could be a followup change)
+  - pros:
+    - ease of implementation
+    - good performance
+  - cons:
+    - if this is the only implementation, it has poor reach
+
+### 8. Disallow sample_mask builtin in WGSL.
+
+**Justification**: OpenGL ES 3.1 does not support gl_SampleMask, gl_SampleMaskIn.
+
+**Alternatives considered**
+- require [GL_OES_sample_variables](https://registry.khronos.org/OpenGL/extensions/OES/OES_sample_variables.txt) 
+  - pro: ease of implementation
+  - con: poor reach: GL_OES_sample_variables has [limited support (~48%)](https://opengles.gpuinfo.org/listreports.php?extension=GL_OES_sample_variables)
+- expose as a WebGPU extension when the GLES extension is present (this could be a followup change)
+  - pros:
+    - ease of implementation
+  - cons:
+    - poor reach
 
 ### 9. `GPUTextureViewDimension` `CubeArray` is unsupported
 
