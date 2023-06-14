@@ -43,14 +43,29 @@ When specifying a texture in a GPUTextureDescriptor, a viewDimension property de
 
 ### 1. Texture view dimension must be specified 
 
-When specifying a texture, a viewDimension property determines the views which can be created from that texture. Creating a view of a differernt dimension than specified at texture creation time will cause a validation error.
+When specifying a texture, a viewDimension property determines the views which can be created from that texture (see "Proposed IDL changes", above). Creating a view of a differernt dimension than specified at texture creation time will cause a validation error.
 
 **Justification**: OpenGL ES does not support texture views.
 
 **Alternatives considered:**
 - make a view dimension guess at texture creation time, and perform a texture-to-texture copy at bind time if the guess was incorrect.
-- make a view dimension guess as above, but also provide the viewDimension property as an (optional) hint
-- disallow 6-layer 2D textures (always cube maps)
+  - pros:
+   - wider support of WebGPU content without modification
+  - cons:
+    - unexpected performance cliff for developers
+    - potentially increased memory usage (two+ copies of texture data)
+- disallow 6-layer 2D arrays (always cube maps)
+  - cons:
+    - poor compatibility, limits applications
+- disallow cube maps (always create 6-layer 2D arrays)
+  - cons:
+    - poor compatibility, limits applications
+- make a view dimension guess as above, but make the viewDimension property optional (a hint)
+  - pros:
+    - wider support of WebGPU content without modification
+  - cons:
+    - if developer doesn't provide the hint, it's still a performance cliff
+    - potentially increased memory usage (two+ copies of texture data)
 
 ### 2. Emulate copyTextureToBuffer() of depth/stencil textures with a compute shader
 
@@ -58,8 +73,19 @@ When specifying a texture, a viewDimension property determines the views which c
 
 **Alternatives considered**:
 - use CPU readback and re-upload
+  - pros:
+    - wide support
+  - cons:
+    - large performance cliff
 - disallow via validation
-- use NV_read_stencil (<1% support)
+  - cons:
+    - poor compatibility
+
+- require [NV_read_stencil](https://registry.khronos.org/OpenGL/extensions/NV/NV_read_depth_stencil.txt)
+  - pros:
+    - good performance
+  - cons:
+    - poor support (<1% on gpuinfo.org)
 
 ### 3. Emulate copyTextureToBuffer() of SNORM textures with a compute shader
 
@@ -68,7 +94,7 @@ When specifying a texture, a viewDimension property determines the views which c
 **Alternatives considered**:
 - disallow via validation
 
-### 4. disallow `CommandEncoder.copyTextureToBuffer()` for compressed texture formats
+### 4. Disallow `CommandEncoder.copyTextureToBuffer()` for compressed texture formats
 
 `CommandEncoder.copyTextureToBuffer()` of a compressed texture is disallowed, and will result in a validation error.
 
@@ -86,18 +112,23 @@ glReadPixels() on works on a framebuffer-complete FBO.
 
 - allow only a single sampler to be used with a given texture
 
-### 6. views of the same texture used in a single draw may not differ in mip level or array layer 
+### 6. Views of the same texture used in a single draw may not differ in mip level or array layer 
 
 A draw call may not reference the same texture with two views differing in mip level. Only a single mip level per texture is supported. This is enforced via validation at encode time.
 
 **Justification**: OpenGL ES does not support texture views.
 
-### 7. color state alphaBlend, colorBlend and writeMask may not differ in a single draw.
+### 7. Solor state alphaBlend, colorBlend and writeMask may not differ in a single draw.
 
 Color state descriptors used in a single draw must have the same alphaBlend, colorBlend and writeMask, or else an encode-time validation error will occur.
 
-**Justification**: OpenGL ES does not support indexed draw buffer state until OpenGL ES 2.0, and GL_EXT_draw_buffers_indexed has limited support
+**Justification**: OpenGL ES 3.1 does not support indexed draw buffer state.
+
+**Alternatives considered**
+- require [GL_EXT_draw_buffers_indexed](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_draw_buffers_indexed.txt) 
+ - con: has [limited support (~42%)](https://opengles.gpuinfo.org/listreports.php?extension=GL_EXT_draw_buffers_indexed)
+- expose as a WebGPU extension when the GLES extension is present (this could be a followup change)
 
 ### 9. `GPUTextureViewDimension` `CubeArray` is unsupported
 
-**Justification**: OpenGL ES does not support Cube Array textures
+**Justification**: OpenGL ES does not support Cube Array textures.
