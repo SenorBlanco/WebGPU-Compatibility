@@ -43,7 +43,7 @@ When specifying a texture in a GPUTextureDescriptor, a viewDimension property de
 
 ### 1. Texture view dimension must be specified 
 
-When specifying a texture, a viewDimension property determines the views which can be created from that texture (see "Proposed IDL changes", above). Creating a view of a differernt dimension than specified at texture creation time will cause a validation error.
+When specifying a texture, a `viewDimension` property determines the views which can be created from that texture (see "Proposed IDL changes", above). Creating a view of a different dimension than specified at texture creation time will cause a validation error.
 
 **Justification**: OpenGL ES does not support texture views.
 
@@ -67,9 +67,9 @@ When specifying a texture, a viewDimension property determines the views which c
     - if developer doesn't provide the hint, it's still a performance cliff
     - potentially increased VRAM usage (two+ copies of texture data)
 
-### 2. Emulate copyTextureToBuffer() of depth/stencil textures with a compute shader
+### 2. Emulate `copyTextureToBuffer()` of depth/stencil textures with a compute shader
 
-**Justification**: OpenGL ES does not support glReadPixels() of depth/stencil textures.
+**Justification**: OpenGL ES does not support `glReadPixels()` of depth/stencil textures.
 
 **Alternatives considered**:
 - use CPU readback and re-upload
@@ -82,15 +82,15 @@ When specifying a texture, a viewDimension property determines the views which c
     - ease of implementation
   - cons:
     - poor compatibility
-- require [GL_NV_read_depth_stencil](https://registry.khronos.org/OpenGL/extensions/NV/NV_read_depth_stencil.txt)
+- require [`GL_NV_read_depth_stencil`](https://registry.khronos.org/OpenGL/extensions/NV/NV_read_depth_stencil.txt)
   - pros:
     - good performance
   - cons:
     - poor support (<1% on gpuinfo.org)
 
-### 3. Emulate copyTextureToBuffer() of SNORM textures with a compute shader
+### 3. Emulate `copyTextureToBuffer()` of SNORM textures with a compute shader
 
-**Justification**: OpenGL ES does not support glReadPixels() of SNORM textures
+**Justification**: OpenGL ES does not support `glReadPixels()` of SNORM textures
 
 **Alternatives considered**:
 - disallow via validation
@@ -141,44 +141,44 @@ A draw call may not reference the same texture with two views differing in mip l
   - cons:
     - poor compatibility
 
-### 7. Color state alphaBlend, colorBlend and writeMask may not differ in a single draw.
+### 7. Color state `alphaBlend`, `colorBlend` and `writeMask` may not differ between color attachments in a single draw.
 
 Color state descriptors used in a single draw must have the same alphaBlend, colorBlend and writeMask, or else an encode-time validation error will occur.
 
 **Justification**: OpenGL ES 3.1 does not support indexed draw buffer state.
 
 **Alternatives considered**
-- require [GL_EXT_draw_buffers_indexed](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_draw_buffers_indexed.txt) 
+- require [`GL_EXT_draw_buffers_indexed`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_draw_buffers_indexed.txt) 
   - pro: ease of implementation
-  - con: poor reach: GL_EXT_draw_buffers_indexed has [limited support (~42%)](https://opengles.gpuinfo.org/listreports.php?extension=GL_EXT_draw_buffers_indexed)
-- expose as a WebGPU extension when the GLES extension is present (this could be a followup change)
+  - con: poor reach: `GL_EXT_draw_buffers_indexed` has [limited support (~42%)](https://opengles.gpuinfo.org/listreports.php?extension=GL_EXT_draw_buffers_indexed)
+- expose as a WebGPU extension when the OpenGL ES extension is present (this could be a followup change)
   - pros:
     - ease of implementation
     - good performance
   - cons:
     - if this is the only implementation, it has poor reach
 
-### 8. Disallow sample_mask builtin in WGSL.
+### 8. Disallow `sample_mask` builtin in WGSL.
 
-**Justification**: OpenGL ES 3.1 does not support gl_SampleMask, gl_SampleMaskIn.
+**Justification**: OpenGL ES 3.1 does not support `gl_SampleMask`, `gl_SampleMaskIn`.
 
 **Alternatives considered**
-- require [GL_OES_sample_variables](https://registry.khronos.org/OpenGL/extensions/OES/OES_sample_variables.txt) 
+- require [`GL_OES_sample_variables`](https://registry.khronos.org/OpenGL/extensions/OES/OES_sample_variables.txt) 
   - pro: ease of implementation
-  - con: poor reach: GL_OES_sample_variables has [limited support (~48%)](https://opengles.gpuinfo.org/listreports.php?extension=GL_OES_sample_variables)
-- expose as a WebGPU extension when the GLES extension is present (this could be a followup change)
+  - con: poor reach: `GL_OES_sample_variables` has [limited support (~48%)](https://opengles.gpuinfo.org/listreports.php?extension=GL_OES_sample_variables)
+- expose as a WebGPU extension when the OpenGL ES extension is present (this could be a followup change)
   - pros:
     - ease of implementation
   - cons:
-    - poor reach
+    - poor reach, unless this is built on top of the proposed solution
 
-### 9. Inject hidden uniforms for textureNumLevels() and textureNumSamples() where required.
+### 9. Inject hidden uniforms for `textureNumLevels()` and `textureNumSamples()` where required.
 
 **Justification**: OpenGL ES 3.1 does not support textureQueryLevels() (only added to desktop GL in OpenGL 4.3).
 
 **Alternatives Considered**:
 
-- disallow textureNumLevels() and textureNumSamples() in WGSL.
+- disallow `textureNumLevels()` and `textureNumSamples()` in WGSL via validation.
   - pros:
     - ease of implementation
   - cons:
@@ -203,9 +203,9 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
 **Alternatives Considered**:
 - none
 
-### 12. Disallow textureLoad() of depth textures in WGSL via validation.
+### 12. Disallow `textureLoad()` of depth textures in WGSL via validation.
 
-**Justification**: OpenGL ES does not support texelFetch() of a depth texture.
+**Justification**: OpenGL ES does not support `texelFetch()` of a depth texture.
 
 **Alternatives considered**:
 - bind to an RGBA8 binding point and use shader ALU
@@ -213,37 +213,37 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
     - compatibility, performance
   - cons:
     - untried (does this work?)
-- use texture() with quantized texture coordinates; massage the results
+- use `texture()` with quantized texture coordinates; massage the results
   - pros:
     - compatibility, performance
   - cons:
     - untried
     - complexity of implementation
 
-### 13. Disallow texture\*() of a texture_depth_2d_array with an offset
+### 13. Disallow `texture\*()` of a `texture_depth_2d_array` with an offset
 
-**Justification**: OpenGL ES does not support textureOffset() on a sampler2DArrayShadow.
+**Justification**: OpenGL ES does not support `textureOffset()` on a sampler2DArrayShadow.
 
 **Alternatives considered**:
 
-- emulate with a texture() call and use ALU for offset
+- emulate with a `texture()` call and use ALU for offset
   - pros:
     - compatibility, performance
   - cons:
     - untried
 
-### 14. Manually pad out GLSL structs and interface blocks to support custom @offset, @align or @size decorations.
+### 14. Manually pad out GLSL structs and interface blocks to support explicit `@offset`, `@align` or `@size` decorations.
 
-**Justification**: OpenGL ES does not support offset= interface block decorations on anything but atomic_uint.
+**Justification**: OpenGL ES does not support offset= interface block decorations on anything but `atomic_uint`.
 
 **Alternatives considered**:
 
-- disallow @offset, @align and @size on WGSL structs via validation
+- disallow `@offset`, `@align` and `@size` on WGSL structs via validation
   - pros:
     - ease of implementation
   - cons:
     - poor compatibility
 
-### 15. Emit dFdx() and dFdy() for all derivative functions (include Coarse and Fine variants).
+### 15. Emit `dFdx()` and `dFdy()` for all derivative functions (include Coarse and Fine variants).
 
-**Justification**: GLSL does not support dFd*Coarse() or dFd*Fine() functions. These can be interpreted as a hint, and ignored in GLSL.
+**Justification**: GLSL does not support `dFd\*Coarse()` or `dFd\*Fine()` functions. However, these can be interpreted as a hint in WGSL.
