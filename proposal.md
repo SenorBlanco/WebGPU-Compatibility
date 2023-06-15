@@ -1,10 +1,12 @@
 # Problem
 
-WebGPU is a good match for modern explicit graphics APIs such as Vulkan, Metal and D3D12. However, there are a large number of devices which do not yet support those APIs. In particular, on Windows the support for D3D12 is at 59%, while D3D11 gives 77% reach. On Android, [23% of Android users do not have Vulkan 1.1 (15% do not have 1.0)](https://developer.android.com/about/dashboards) On ChromeOS, Vulkan penetration is still quite low, while OpenGL ES 3.1 is ubiquitous.
+WebGPU is a good match for modern explicit graphics APIs such as Vulkan, Metal and D3D12. However, there are a large number of devices which do not yet support those APIs. In particular, on Chrome on Windows, the support for D3D12 is at 59%, while D3D11 gives 77% reach. On Android, [23% of Android users do not have Vulkan 1.1 (15% do not have 1.0)](https://developer.android.com/about/dashboards). On ChromeOS, Vulkan penetration is still quite low, while OpenGL ES 3.1 is ubiquitous.
 
 # Goals
 
-The primary goal of WebGPU/Compat is to increase the reach of WebGPU by providing an opt-in, slightly restricted subset of WebGPU which will run on older APIs such as D3D11 and OpenGL ES. This will increase adoption of WebGPU applications via a wider userbase.
+The primary goal of WebGPU Compatibility mode is to increase the reach of WebGPU by providing an opt-in, slightly restricted subset of WebGPU which will run on older APIs such as D3D11 and OpenGL ES. This will increase adoption of WebGPU applications via a wider userbase.
+
+Since WebGPU Compatibility mode is a subset of WebGPU, all valid Compatibility mode applications are also valid WebGPU applications. Consequently, Compatibility mode applications will also run on user agents which do not support Compatibility mode. Such user agents will simply ignore the option requesting a Compatibility mode Adapter and return a Core WebGPU Adapter instead.
 
 # Proposed IDL changes
 
