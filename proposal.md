@@ -250,16 +250,52 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
 
 **Justification**: GLSL does not support `dFd*Coarse()` or `dFd*Fine()` functions. However, these variants can be interpreted as a hint in WGSL, and emitted as `dFd*()`.
 
-### 16. Use GL_ext_texture_format_BGRA8888 to support BGRA `copyBufferToTexture()` and RGBA textures and swizzle workarounds where unavailable.
+**Alternatives considered**:
+
+- disallow `Coarse` and `Fine` variants via validation in WGSL
+  - cons:
+    - poor compatibility
+- `Coarse` is allowed; `Fine` is disallowed via validation
+
+### 16. Use [`GL_ext_texture_format_BGRA8888`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_texture_format_BGRA8888.txt) to support BGRA `copyBufferToTexture()` and swizzle workarounsd and RGBA textures where unavailable.
 
 **Justification**: OpenGL ES does not support BGRA texture formats.
+
+`GL_ext_texture_format_BGRA8888` supports texture uploads and the BGRA8888 texture format, and has [99%+ support](https://opengles.gpuinfo.org/listreports.php?extension=GL_EXT_texture_format_BGRA8888). The vast majority of devices which do not support it are GLES 3.0 implementations, and so would not support Compatibility mode anyway, but if an important device emerges, a CPU- or GPU-based swizzle workaround and RGBA textures should be implemented.
+
+**Alternatives considered**
+- disallow BGRA8888 as a texture format through validation
+  - pros:
+    - ease of implementation
+  - cons:
+    - poor compatibility
 
 ### 17. Work around lack of BGRA support in copyTextureToBuffer() via compute or sampling.
 
-**Justification**: OpenGL ES does not support BGRA texture formats.
+**Justification**: OpenGL ES does not support BGRA texture formats for `glReadPixels()`, even with the `GL_ext_texture_format_BGRA8888` extension.
+
+There is no corresponding gl
 
 ### 18. Disallow bgra8unorm-srgb textures.
 
 **Justification**: OpenGL ES does not support BGRA texture formats.
 
-### 19. Use emulation to support BaseVertex / BaseInstance in direct draws. Disallow via validation in indirect draws.
+**Alternatives considered**:
+- use a compute shader to swizzle bgra8unorm-srgb to rgba8unorm-srgb on `copyBufferToTexture()` and the reverse on `copyTextureToBuffer()`
+  - pros:
+    - wide compatibility
+  - cons:
+    - a performance cliff for developers
+    - increased VRAM usage
+
+### 19. Use emulation workaround to support BaseVertex / BaseInstance in direct draws. Disallow via validation in indirect draws.
+
+**Justification**: OpenGL ES 3.1 does not support `baseVertex` or `baseInstance` parameters in Draw calls.
+
+**Alternatives considered**
+
+- require `OES_draw_elements_base_vertex` (21% support) or `EXT_draw_elements_base_vertex` (21%) and `GL_EXT_base_instance` (1.7%)
+  - pros:
+    - ease of implementation
+  - cons:
+    - poor compatibility
