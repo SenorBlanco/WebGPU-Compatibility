@@ -116,9 +116,9 @@ glReadPixels() on works on a framebuffer-complete FBO.
     - performance overhead, even when readbacks are not required
     - VRAM overhead
 
-### 5. Views of the same texture used in a single draw may not differ in mip level or array layer 
+### 5. Views of the same texture used in a single draw may not differ in mip level or array layer parameters.
 
-A draw call may not reference the same texture with two views differing in mip level or array layer. Only a single mip level and array layer per texture is supported. This is enforced via validation at encode time.
+A draw call may not reference the same texture with two views differing in `baseMipLevel`, `mipLevelCount`, `baseArrayLayer`, or `arrayLayerCount`. Only a single mip level range and array layer range per texture is supported. This is enforced via validation at encode time.
 
 **Justification**: OpenGL ES does not support texture views.
 
