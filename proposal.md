@@ -41,7 +41,7 @@ dictionary GPUTextureDescriptor : GPUObjectDescriptorBase {
 
 When specifying a texture in a GPUTextureDescriptor, a viewDimension property determines the views which can be created from that texture. Creating a view of a different dimension than specified at texture creation time will cause a validation error.
 
-# Compatiblity mode issues and restrictions
+# Compatibility mode issues and restrictions
 
 ### 1. Texture view dimension must be specified 
 
