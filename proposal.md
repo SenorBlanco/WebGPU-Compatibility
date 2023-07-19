@@ -291,7 +291,13 @@ The features below are not supported natively in OpenGL ES, but it is proposed t
 
 **Justification**: OpenGL ES does not support BGRA texture formats for `glReadPixels()`, even with the `GL_ext_texture_format_BGRA8888` extension.
 
-There is no corresponding gl
+Alternatives considered:
+
+- disallow copyTextureToBuffer() for BGRA formats.
+  - pros:
+    - ease of implementation
+  - cons:
+    - poor compatibility
 
 ### 9. Use emulation workaround to support BaseVertex / BaseInstance in direct draws. Disallow via validation in indirect draws.
 
