@@ -35,7 +35,7 @@ partial dictionary GPUTextureDescriptor {
 }
 ```
 
-When specifying a texture in a GPUTextureDescriptor, a viewDimension property determines the views which can be created from that texture. Creating a view of a different dimension than specified at texture creation time will cause a validation error.
+See "Texture view dimension must be specified", below.
 
 # Compatibility mode restrictions
 
@@ -46,18 +46,42 @@ When specifying a texture, a `viewDimension` property determines the views which
 **Justification**: OpenGL ES does not support texture views.
 
 **Alternatives considered:**
+- add viewDimension to GPUTextureDescriptor, as above
+  - if viewDimension is unspecified, use the following algorithm:
+    ```
+    if desc.dimension is "1d":
+        set viewDimension to "1d"
+    if desc.dimension is "2d":
+      if desc.size.depthOrArrayLayers is 1:
+        set viewDimension to "2d"
+      if desc.size.depthOrArrayLayers is 6:
+        set viewDimension to "cube"
+      else:
+        set viewDimension to "2d-array"
+    if desc.dimension is "3d":
+      set viewDimension to "3d"
+    ```
+  - all views created from this texture must have textureViewDimension equal to the viewDimension as specified or computed above
+  - pros:
+    - good compatibility
+    - wider support of existing WebGPU content without modification
+  - cons:
+    - default behaviour may not be what developers expected
+
 - make a view dimension guess at texture creation time, and perform a texture-to-texture copy at bind time if the guess was incorrect.
   - pros:
     - wider support of WebGPU content without modification
   - cons:
     - unexpected performance cliff for developers
     - potentially increased VRAM usage (two+ copies of texture data)
+
 - disallow 6-layer 2D arrays (always cube maps)
   - cons:
     - poor compatibility, limits applications
 - disallow cube maps (always create 6-layer 2D arrays)
   - cons:
     - poor compatibility, limits applications
+
 - make a view dimension guess as above, but make the viewDimension property optional (a hint)
   - pros:
     - wider support of WebGPU content without modification
