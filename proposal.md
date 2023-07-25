@@ -207,7 +207,7 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
 
 ### 10. Disallow bgra8unorm-srgb textures.
 
-**Justification**: OpenGL ES does not support BGRA texture formats.
+**Justification**: OpenGL ES does not support sRGB BGRA texture formats.
 
 **Alternatives considered**:
 - use a compute shader to swizzle bgra8unorm-srgb to rgba8unorm-srgb on `copyBufferToTexture()` and the reverse on `copyTextureToBuffer()`
