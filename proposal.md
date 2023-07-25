@@ -10,21 +10,18 @@ Since WebGPU Compatibility mode is a subset of WebGPU, all valid Compatibility m
 
 # Proposed IDL changes
 
-```
-dictionary GPURequestAdapterOptions {
-    ...
+```webidl
+partial dictionary GPURequestAdapterOptions {
     boolean compatibilityMode = false;
 }
-
 ```
 
 When calling `GPU.RequestAdapter()`, passing `compatibilityMode = true` in the `GPURequestAdapterOptions` will indicate to the User Agent to select the Compatibility subset of WebGPU. Any Devices created from the resulting Adapter on supporting UAs will support only Compatibility mode. Calls to APIs unsupported by Compatibility mode will result in validation errors.
 
 Note that a supporting User Agent may return a `compatibilityMode = true` Adapter which is backed by a fully WebGPU-capable hardware adapter, such as D3D12, Metal or Vulkan, so long as it validates all subsequent API calls made on the Adapter and the objects it vends against the Compatibility subset.
 
-```
-interface GPUAdapter {
-    ...
+```webidl
+partial interface GPUAdapter {
     readonly attribute boolean isCompatibilityMode;
 }
 ```
@@ -32,9 +29,8 @@ interface GPUAdapter {
 As a convenience to the developer, the Adapter returned will have the `isCompatibilityMode` property set to `true`.
 
 
-```
-dictionary GPUTextureDescriptor : GPUObjectDescriptorBase {
-    ...
+```webidl
+partial dictionary GPUTextureDescriptor {
     GPUTextureViewDimension viewDimension;
 }
 ```
@@ -68,7 +64,6 @@ When specifying a texture, a `viewDimension` property determines the views which
   - cons:
     - if developer doesn't provide the hint, it's still a performance cliff
     - potentially increased VRAM usage (two+ copies of texture data)
-
 
 ### 2. Disallow `CommandEncoder.copyTextureToBuffer()` for compressed texture formats
 
