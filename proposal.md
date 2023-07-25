@@ -46,8 +46,8 @@ When specifying a texture, a `viewDimension` property determines the views which
 **Justification**: OpenGL ES does not support texture views.
 
 **Alternatives considered:**
-- add viewDimension to GPUTextureDescriptor, as above
-  - if viewDimension is unspecified, use the following algorithm:
+- add `viewDimension` to `GPUTextureDescriptor`, as above
+  - if `viewDimension` is unspecified, use the following algorithm:
     ```
     if desc.dimension is "1d":
         set viewDimension to "1d"
@@ -61,16 +61,16 @@ When specifying a texture, a `viewDimension` property determines the views which
     if desc.dimension is "3d":
       set viewDimension to "3d"
     ```
-  - all views created from this texture must have textureViewDimension equal to the viewDimension as specified or computed above
+  - all views created from this texture must have `dimension` equal to the `viewDimension` as specified or computed above, else a validation error occurs
   - pros:
-    - good compatibility
+    - more concise than a mandatory `viewDimension`
     - wider support of existing WebGPU content without modification
   - cons:
     - default behaviour may not be what developers expected
 
 - make a view dimension guess at texture creation time, and perform a texture-to-texture copy at bind time if the guess was incorrect.
   - pros:
-    - wider support of WebGPU content without modification
+    - wider support of existing WebGPU content without modification
   - cons:
     - unexpected performance cliff for developers
     - potentially increased VRAM usage (two+ copies of texture data)
@@ -84,7 +84,7 @@ When specifying a texture, a `viewDimension` property determines the views which
 
 - make a view dimension guess as above, but make the viewDimension property optional (a hint)
   - pros:
-    - wider support of WebGPU content without modification
+    - wider support of existing WebGPU content without modification
   - cons:
     - if developer doesn't provide the hint, it's still a performance cliff
     - potentially increased VRAM usage (two+ copies of texture data)
