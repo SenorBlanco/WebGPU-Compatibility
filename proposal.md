@@ -75,6 +75,14 @@ When specifying a texture, a `viewDimension` property determines the views which
     - unexpected performance cliff for developers
     - potentially increased VRAM usage (two+ copies of texture data)
 
+- make a view dimension guess at texture creation time, and perform a texture-to-texture copy on first use if the guess was incorrect. All subsequent views created from that texture must have the same dimension as the first use, else a validation error occurs.
+  - pros:
+    - wider support of existing WebGPU content without modification
+    - at worst, a one-time performance penalty
+  - cons:
+    - unexpected performance cliff for developers
+    - potentially increased VRAM usage (at worst, two copies of texture data)
+
 - disallow 6-layer 2D arrays (always cube maps)
   - cons:
     - poor compatibility, limits applications
