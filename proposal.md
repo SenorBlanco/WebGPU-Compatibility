@@ -112,22 +112,48 @@ glReadPixels() on works on a framebuffer-complete FBO.
     - performance overhead, even when readbacks are not required
     - VRAM overhead
 
-### 3. Views of the same texture used in a single draw may not differ in mip level or array layer parameters.
+### 3. Views of the same texture used in a single draw may not differ in mip level.
 
-A draw call may not reference the same texture with two views differing in `baseMipLevel`, `mipLevelCount`, `baseArrayLayer`, or `arrayLayerCount`. Only a single mip level range and array layer range per texture is supported. This is enforced via validation at encode time.
+A draw call may not reference the same texture with two views differing in `baseMipLevel` or `mipLevelCount`. Only a single mip level range range per texture is supported. This is enforced via validation at encode time.
 
 **Justification**: OpenGL ES does not support texture views.
 
 **Alternatives considered**:
 
-- when two bindings exist with different mip levels or array layers, do a texture-to-texture copy
+- when two bindings exist with different mip levels, do a texture-to-texture copy
   - pros:
     - good compatibility
   - cons:
     - a performance cliff for developers
     - higher VRAM usage
 
-### 4. Color state `alphaBlend`, `colorBlend` and `writeMask` may not differ between color attachments in a single draw.
+### 4. Array texture views used in draw calls must consist of the entire array. That is, `baseArrayLayer` must be zero, and `arrayLayerCount` must be equal to the size of the texture array.
+
+A draw call may not reference a subset of array layers. Only views of the entire array are supported for sampling. This is enforced via validation at encode time.
+
+**Justification**: OpenGL ES does not support texture views.
+
+**Alternatives considered**:
+
+- when a view contains a subset of the array layers, do a texture-to-texture copy
+  - pros:
+    - good compatibility
+  - cons:
+    - a performance cliff for developers
+    - higher VRAM usage
+
+- shader, uniform and ALU workaround:
+  - for each texture_2d_array binding in a shader, add a `baseArrayLayer` and `arrayLayerMax` uniform
+  - (arrayLayerMax = baseArrayLayer + arrayLayerCount - 1)
+  - pass these uniforms as parameters to each function accepting a texture_2d_array parameter, and perform ALU to compute the final array_index passed to texture functions
+  - e.g., textureSample(t, s, coords, array_index) becomes
+          textureSample(t, s, coords, max(array_index + baseArrayLayer, arrayLayerMax))
+  - pros:
+    - good compatibility
+  - cons:
+    - some complexity of implementation
+
+### 5. Color state `alphaBlend`, `colorBlend` and `writeMask` may not differ between color attachments in a single draw.
 
 Color state descriptors used in a single draw must have the same alphaBlend, colorBlend and writeMask, or else an encode-time validation error will occur.
 
@@ -144,7 +170,7 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
   - cons:
     - if this is the only implementation, it has poor reach
 
-### 5. Disallow `sample_mask` builtin in WGSL.
+### 6. Disallow `sample_mask` builtin in WGSL.
 
 **Justification**: OpenGL ES 3.1 does not support `gl_SampleMask`, `gl_SampleMaskIn`.
 
@@ -158,14 +184,14 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
   - cons:
     - poor reach, unless this is built on top of the proposed solution
 
-### 6. Disallow `GPUTextureViewDimension` `"CubeArray"` via validation
+### 7. Disallow `GPUTextureViewDimension` `"CubeArray"` via validation
 
 **Justification**: OpenGL ES does not support Cube Array textures.
 
 **Alternatives Considered**:
 - none
 
-### 7. Disallow `textureLoad()` of depth textures in WGSL via validation.
+### 8. Disallow `textureLoad()` of depth textures in WGSL via validation.
 
 **Justification**: OpenGL ES does not support `texelFetch()` of a depth texture.
 
@@ -182,7 +208,7 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
     - untried
     - complexity of implementation
 
-### 8. Disallow `texture*()` of a `texture_depth_2d_array` with an offset
+### 9. Disallow `texture*()` of a `texture_depth_2d_array` with an offset
 
 **Justification**: OpenGL ES does not support `textureOffset()` on a sampler2DArrayShadow.
 
@@ -194,7 +220,7 @@ Color state descriptors used in a single draw must have the same alphaBlend, col
   - cons:
     - untried
 
-### 9. Emit `dpdx()` and `dpdy()` for all derivative functions (include Coarse and Fine variants).
+### 10. Emit `dpdx()` and `dpdy()` for all derivative functions (include Coarse and Fine variants).
 
 **Justification**: GLSL does not support `dFd*Coarse()` or `dFd*Fine()` functions. However, these variants can be interpreted as a hint in WGSL, and emitted as `dFd*()`.
 
